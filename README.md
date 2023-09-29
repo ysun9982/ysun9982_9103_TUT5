@@ -1,4 +1,4 @@
-# Wk8 Quiz
+# Quiz8
 
 This is Wk8 Quiz by Yining.
 
