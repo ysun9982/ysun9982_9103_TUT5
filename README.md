@@ -17,7 +17,7 @@ I plan to represent Piet Mondrian's artwork. And the imaging technique I'd like 
 
 ### Part 2: Coding Technique Exploration
 
-I think there will be some technical difficulties in achieving the effect in Part 1. I did a lot of research and finally found that this coding technique might help the project. It is adapted and implemented in JavaScript using the Three.js 3D library. The JSCity is an implementation of the Code City metaphor for visualizing source code.
+I think there will be some technical difficulties in achieving the effect in Part 1. I did a lot of research and finally found that this coding technique might help the project. It is adapted and implemented in JavaScript using the Three.js 3D library. The JSCity is an implementation of the Code City metaphor for visualizing source code. This encoding technique may be used to represent the urban area grid I mentioned in Part 1.
 
 <p align="center">
   <img src="/assets/images/jscity.png" width=50% align="center" />
