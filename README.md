@@ -1,8 +1,8 @@
-# ysun9982_9103_TUT5
+# Wk8 Quiz
 
-Hello!
+This is Wk8 Quiz by Yining.
 
-# WOW! Image
+### Part 1: Imaging Technique Inspiration
 
 ![Avatar](/assets/images/Avatar.png "Hello, I'm hover text!")
 **Avatar**
