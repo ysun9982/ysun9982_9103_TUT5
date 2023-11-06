@@ -1,20 +1,13 @@
-let breatheDirection = 1; // Direction control for sun's brightness, 1 for brighter, -1 for dimmer
-let breatheSpeed = 0.5; // Speed of the sun's brightness change
-let isDay = true;  // Boolean to check if it is currently day time
-
-let dayNightCycle = 'day';  // Initially set to day
-
-let sunBrightness = 255;  // Initial brightness of the sun
 let dayDuration = 480;  // Duration of each phase, for example, 480 frames
-let phase = 1;  // Current phase
-let timer = 0;  // Timer for phase changes
+let phase = 1;  // current phase
+let timer = 0;  // timer
 
 let circleSize = 200;
 let circleRadius = circleSize / 2;
 let bigCircleScale = 1;
 let smallCircleScale = 0.6;
 
-// Coordinates for big and small circles representing the Apple's locations
+// Apple's coordinates 
 let bigcircleCenters = [
   { x: 400, y: 324 },
   { x: 300, y: 500 },
@@ -56,14 +49,10 @@ const canvasRatio = 2 / 3; // Make sure the canvas ratio is always 2:3
 function setup() {
   createCanvas(windowWidth, windowHeight);
   calculateCanvasSize();
-  
-  // noLoop();
 }
 
 
 function draw() {
-  // background(243, 240, 231);
-
   // Call the function corresponding to the current stage
   if (phase === 1) {
     dayPhase();
@@ -103,7 +92,7 @@ function draw() {
 
   drawRoots();
 
-  
+
 }
 
 
@@ -119,59 +108,65 @@ function scaledElement(inputElement) {
 function dayPhase() {
   let dayColor = color(243, 240, 231);
   background(dayColor);
-  drawSun(255); // The sun is the brightest
+  drawPlanet(1, lerp(0, 255, timer / dayDuration), 245, 135, 26);
 }
-
 // Functions for different phases of the sunset
 function sunsetPhase() {
   let sunsetColor = lerpColor(color(243, 240, 231), color(18, 24, 46), timer / dayDuration);
   background(sunsetColor);
-  drawSun(lerp(255, 0, timer / dayDuration *2)); // The sun is getting darker
+  drawPlanet(2, lerp(255, 0, timer / dayDuration), 245, 135, 26);
 }
-
 // Functions for different phases of the night
 function nightPhase() {
-  let nightColor = color(18, 24, 46);  // Dark Blue night
+  let nightColor = color(18, 24, 46);
   background(nightColor);
-  drawStars(); // draw stars
+  drawPlanet(1, lerp(0, 255, timer / dayDuration), 255, 255, 204);
+  drawStars();
 }
-
 // Functions for different phases of the dawn
 function dawnPhase() {
   let dawnColor = lerpColor(color(18, 24, 46), color(243, 240, 231), timer / dayDuration);
   background(dawnColor);
-  // drawSun(lerp(0, 255, timer / dayDuration)); // The sun is getting brighter
-  if (timer > dayDuration / 2) {
-    // The third parameter of lerp here is calculated based on the remaining time, ensuring that the sun's brightness gradually changes from 0 to 255
-    drawSun(lerp(0, 255, (timer - dayDuration / 2) / (dayDuration / 2)));
-  }
+  drawPlanet(2, lerp(255, 0, timer / dayDuration), 255, 255, 204);
+  drawStars();
 }
 
-// Function to draw the sun with varying brightness
-function drawSun(sunBrightness) {
-  let numSuns = 8;  // Solar layers, including halos
-  let sunCenterX = width / 2;
-  let sunCenterY = 0; 
 
-  for (let i = numSuns; i > 0; i--) {
+function drawPlanet(status, brightness, r, g, b) {
+  let angle; // map the timer to a range from 0 to PI for a semicircle
+  let planetCenterX; // map the cosine of angle to screen width
+  let planetCenterY;
+
+  if (status == 1) {
+    angle = map(timer, 0, dayDuration, 0, PI / 2);
+    planetCenterX = map(cos(angle), -1, 1, 0, width);
+    planetCenterY = map(sin(angle), 0, 1, height, 0);
+  } else if (status == 2) {
+    angle = map(timer, 0, dayDuration, PI / 2, PI);
+    planetCenterX = map(cos(angle), 1, -1, width, 0);
+    planetCenterY = map(sin(angle), 1, 0, 0, height);
+  }
+  let numPlanets = 8;  // Solar layers, including halos
+
+  for (let i = numPlanets; i > 0; i--) {
     // Calculate the size of each layer, the inner layer is small and the outer layer is large
-    let sunSize = scaledElement(1000 + i * 100);
+    let planetSize = scaledElement(300 + i * 100);
     // Calculate transparency for each layer, high for inner layers and low for outer layers
-    let alpha = sunBrightness * (1 - i / numSuns);
+    let alpha = brightness * (1 - i / numPlanets);
 
     // Use translucent white to add brightness to the sun
-    let sunColor = color(245, 135, 26, alpha);
-    
-    fill(sunColor);
+    let planetColor = color(r, g, b, alpha);
+
+    fill(planetColor);
     noStroke();
-    ellipse(sunCenterX, sunCenterY, sunSize, sunSize);
+    ellipse(planetCenterX, planetCenterY, planetSize, planetSize);
   }
 }
 
 
 // Function to draw stars during the night phase
 function drawStars() {
-  let stars = 100; 
+  let stars = 100;
   for (let i = 0; i < stars; i++) {
     let x = random(width);
     let y = random(height / 2); // Draw stars only in the top half of the screen
