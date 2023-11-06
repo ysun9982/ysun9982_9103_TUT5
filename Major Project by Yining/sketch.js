@@ -1,9 +1,20 @@
+let breatheDirection = 1; // Direction control for sun's brightness, 1 for brighter, -1 for dimmer
+let breatheSpeed = 0.5; // Speed of the sun's brightness change
+let isDay = true;  // Boolean to check if it is currently day time
+
+let dayNightCycle = 'day';  // Initially set to day
+
+let sunBrightness = 255;  // Initial brightness of the sun
+let dayDuration = 480;  // Duration of each phase, for example, 480 frames
+let phase = 1;  // Current phase
+let timer = 0;  // Timer for phase changes
+
 let circleSize = 200;
 let circleRadius = circleSize / 2;
 let bigCircleScale = 1;
 let smallCircleScale = 0.6;
 
-// Apple's coordinates 
+// Coordinates for big and small circles representing the Apple's locations
 let bigcircleCenters = [
   { x: 400, y: 324 },
   { x: 300, y: 500 },
@@ -45,19 +56,35 @@ const canvasRatio = 2 / 3; // Make sure the canvas ratio is always 2:3
 function setup() {
   createCanvas(windowWidth, windowHeight);
   calculateCanvasSize();
-
-  noLoop();
+  
+  // noLoop();
 }
 
 
 function draw() {
-  background(243, 240, 231);
+  // background(243, 240, 231);
 
-  drawSun();
+  // Call the function corresponding to the current stage
+  if (phase === 1) {
+    dayPhase();
+  } else if (phase === 2) {
+    sunsetPhase();
+  } else if (phase === 3) {
+    nightPhase();
+  } else if (phase === 4) {
+    dawnPhase();
+  }
+
+  // Update timer and phase
+  timer++;
+  if (timer > dayDuration) {
+    timer = 0;
+    phase = phase < 4 ? phase + 1 : 1;
+  }
+
   drawBackgroundLines();
   drawGround();
   drawTreeTrunk();
-  
   for (let center of bigcircleCenters) {
     stroke(15);
     strokeWeight(scaledElement(6));
@@ -75,6 +102,8 @@ function draw() {
   }
 
   drawRoots();
+
+  
 }
 
 
@@ -86,23 +115,76 @@ function scaledElement(inputElement) {
 }
 
 
-function drawSun() {
-  // Draw the sun
-  noStroke();
-  let numSuns = 8;
+// Functions for different phases of the day
+function dayPhase() {
+  let dayColor = color(243, 240, 231);
+  background(dayColor);
+  drawSun(255); // The sun is the brightest
+}
+
+// Functions for different phases of the sunset
+function sunsetPhase() {
+  let sunsetColor = lerpColor(color(243, 240, 231), color(18, 24, 46), timer / dayDuration);
+  background(sunsetColor);
+  drawSun(lerp(255, 0, timer / dayDuration *2)); // The sun is getting darker
+}
+
+// Functions for different phases of the night
+function nightPhase() {
+  let nightColor = color(18, 24, 46);  // Dark Blue night
+  background(nightColor);
+  drawStars(); // draw stars
+}
+
+// Functions for different phases of the dawn
+function dawnPhase() {
+  let dawnColor = lerpColor(color(18, 24, 46), color(243, 240, 231), timer / dayDuration);
+  background(dawnColor);
+  // drawSun(lerp(0, 255, timer / dayDuration)); // The sun is getting brighter
+  if (timer > dayDuration / 2) {
+    // The third parameter of lerp here is calculated based on the remaining time, ensuring that the sun's brightness gradually changes from 0 to 255
+    drawSun(lerp(0, 255, (timer - dayDuration / 2) / (dayDuration / 2)));
+  }
+}
+
+// Function to draw the sun with varying brightness
+function drawSun(sunBrightness) {
+  let numSuns = 8;  // Solar layers, including halos
   let sunCenterX = width / 2;
-  let sunCenterY = 0;
+  let sunCenterY = 0; 
 
-  for (let i = 0; i < numSuns; i++) {
-    let sunSize = scaledElement(300 + i * 50);
-    let sunColor = color(245, 135, 26, 50);
+  for (let i = numSuns; i > 0; i--) {
+    // Calculate the size of each layer, the inner layer is small and the outer layer is large
+    let sunSize = scaledElement(1000 + i * 100);
+    // Calculate transparency for each layer, high for inner layers and low for outer layers
+    let alpha = sunBrightness * (1 - i / numSuns);
 
+    // Use translucent white to add brightness to the sun
+    let sunColor = color(245, 135, 26, alpha);
+    
     fill(sunColor);
-    ellipse(sunCenterX, sunCenterY, sunSize * 2);
+    noStroke();
+    ellipse(sunCenterX, sunCenterY, sunSize, sunSize);
   }
 }
 
 
+// Function to draw stars during the night phase
+function drawStars() {
+  let stars = 100; 
+  for (let i = 0; i < stars; i++) {
+    let x = random(width);
+    let y = random(height / 2); // Draw stars only in the top half of the screen
+    let size = random(1, 3);
+    let starColor = color(255, 255, 255, random(150, 255));
+
+    noStroke();
+    fill(starColor);
+    ellipse(x, y, size, size);
+  }
+}
+
+// Function to draw background lines that provide a sense of depth
 function drawBackgroundLines() {
   // Draw the background lines
   let numLines = 23;
@@ -111,8 +193,8 @@ function drawBackgroundLines() {
 
   //3 groups of lines to create the circle trend
   let radius1 = scaledElement(900);
-  let radius2 = scaledElement(1000);
-  let radius3 = scaledElement(1100);
+  let radius2 = scaledElement(1200);
+  let radius3 = scaledElement(1500);
   let gap = scaledElement(220);
   let interval = scaledElement(80); // distance between each two lines
 
@@ -123,6 +205,7 @@ function drawBackgroundLines() {
 }
 
 
+// Function to draw multiple lines with specified parameters
 function drawLines(numLines, gap, interval, inputRadius, centerX, centerY, strokeW) {
   strokeWeight(strokeW)
   stroke(151, 183, 176)
@@ -142,7 +225,7 @@ function drawLines(numLines, gap, interval, inputRadius, centerX, centerY, strok
   }
 }
 
-
+// Function to draw the ground/base
 function drawGround() {
   noStroke();
   let rectHeight = scaledElement(600);
@@ -151,7 +234,7 @@ function drawGround() {
   rect(0, canvasHeight - rectHeight, canvasWidth, rectHeight);
 }
 
-
+// Function to draw the tree trunk
 function drawTreeTrunk() {
   let rectHeight = scaledElement(600);
   let rectX1 = scaledElement(120);
@@ -166,7 +249,7 @@ function drawTreeTrunk() {
   rect(width / 2 - rectX3 / 2, height - (rectHeight + rectY3), rectX3, rectY3);
 }
 
-
+// Function to draw the roots of the tree
 function drawRoots() {
   noStroke();
   let rectHeight = scaledElement(600);
@@ -184,7 +267,7 @@ function drawRoots() {
   }
 }
 
-
+// Function to draw a group of circles arranged in a particular pattern
 function drawCircleGroup(x, y, radius, scale) {
   let numCircles = 5;  // Numbers of concentric circles
   let circleSpacing = 20;
@@ -210,7 +293,6 @@ function drawCircleGroup(x, y, radius, scale) {
 
   pop();
 }
-
 
 
 function calculateCanvasSize() {
